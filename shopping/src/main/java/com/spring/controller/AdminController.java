@@ -9,9 +9,11 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -22,13 +24,17 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.spring.constants.ResponseCode;
 import com.spring.constants.WebConstants;
+import com.spring.model.Item;
 import com.spring.model.PlaceOrder;
 import com.spring.model.Product;
 import com.spring.model.User;
 import com.spring.repository.CartRepository;
+import com.spring.repository.ItemRepository;
 import com.spring.repository.OrderRepository;
 import com.spring.repository.ProductRepository;
 import com.spring.repository.UserRepository;
+import com.spring.response.ItemResponse;
+import com.spring.response.ItemVO;
 import com.spring.response.order;
 import com.spring.response.prodResp;
 import com.spring.response.serverResp;
@@ -36,7 +42,7 @@ import com.spring.response.viewOrdResp;
 import com.spring.util.Validator;
 import com.spring.util.jwtUtil;
 
-@CrossOrigin(origins = WebConstants.ALLOWED_URL)
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/admin")
 public class AdminController {
@@ -52,6 +58,9 @@ public class AdminController {
 
 	@Autowired
 	private CartRepository cartRepo;
+	
+	@Autowired
+	private ItemRepository itemRepo;
 
 	@Autowired
 	private jwtUtil jwtutil;
@@ -80,7 +89,7 @@ public class AdminController {
 		return new ResponseEntity<serverResp>(resp, HttpStatus.OK);
 	}
 
-	@PostMapping("/addProduct")
+	@PostMapping("/v1/addProduct")
 	public ResponseEntity<prodResp> addProduct(@RequestHeader(name = WebConstants.USER_AUTH_TOKEN) String AUTH_TOKEN,
 			@RequestParam(name = WebConstants.PROD_FILE) MultipartFile prodImage,
 			@RequestParam(name = WebConstants.PROD_DESC) String description,
@@ -270,4 +279,76 @@ public class AdminController {
 		}
 		return new ResponseEntity<serverResp>(resp, HttpStatus.ACCEPTED);
 	}
+	
+	
+	//@PostMapping("/addProduct", consumes = { "multipart/form-data" })
+	 @PostMapping(value = "/addProduct")
+	public ResponseEntity<ItemResponse> addItem(@RequestHeader(name = WebConstants.USER_AUTH_TOKEN) String AUTH_TOKEN,
+			@RequestParam(name = "description") String description,
+			@RequestParam(name = "itemname") String itemname,
+			@RequestParam(name = "price") String price,
+			@RequestParam(name = "quantity") String quantity,
+			@RequestParam(name = "address") String address,
+			@RequestParam(name = "emailaddress") String emailaddress,
+			@RequestParam(name = "phonenumber") String phonenumber,
+			@RequestParam(name = "freebie") String freebie,
+			@RequestParam(name = "file") MultipartFile file
+			
+			) throws IOException {
+		ItemResponse resp = new ItemResponse();
+		if (Validator.isStringEmpty(itemname) ) {
+			resp.setStatus(ResponseCode.BAD_REQUEST_CODE);
+			resp.setMessage(ResponseCode.BAD_REQUEST_MESSAGE);
+		} else if (!Validator.isStringEmpty(AUTH_TOKEN) && jwtutil.checkToken(AUTH_TOKEN) != null) {
+			try {
+				Item item = new Item();
+				item.setDescription(description);
+				item.setPrice(Double.parseDouble(price));
+				item.setItemname(itemname);
+				item.setQuantity(Integer.parseInt(quantity));
+				item.setItemimage(file.getBytes());
+				item.setEmailaddress(emailaddress);
+				item.setPhonenumber(phonenumber);
+				item.setFreebie(freebie);
+				item.setAddress(address);
+				itemRepo.save(item);
+
+				resp.setStatus(ResponseCode.SUCCESS_CODE);
+				resp.setMessage(ResponseCode.ADD_SUCCESS_MESSAGE);
+				resp.setAUTH_TOKEN(AUTH_TOKEN);
+				resp.setOblist(itemRepo.findAll());
+			} catch (Exception e) {
+				resp.setStatus(ResponseCode.FAILURE_CODE);
+				resp.setMessage(e.getMessage());
+				resp.setAUTH_TOKEN(AUTH_TOKEN);
+			}
+		} else {
+			resp.setStatus(ResponseCode.BAD_REQUEST_CODE);
+			resp.setMessage(ResponseCode.BAD_REQUEST_MESSAGE);
+		}
+		return new ResponseEntity<ItemResponse>(resp, HttpStatus.ACCEPTED);
+	}
+
+	@PostMapping("/getItems")
+	public ResponseEntity<ItemResponse> getItems(@RequestHeader(name = WebConstants.USER_AUTH_TOKEN) String AUTH_TOKEN)
+			throws IOException {
+		ItemResponse resp = new ItemResponse();
+		if (!Validator.isStringEmpty(AUTH_TOKEN) && jwtutil.checkToken(AUTH_TOKEN) != null) {
+			try {
+				resp.setStatus(ResponseCode.SUCCESS_CODE);
+				resp.setMessage(ResponseCode.LIST_SUCCESS_MESSAGE);
+				resp.setAUTH_TOKEN(AUTH_TOKEN);
+				resp.setOblist(itemRepo.findAll());
+			} catch (Exception e) {
+				resp.setStatus(ResponseCode.FAILURE_CODE);
+				resp.setMessage(e.getMessage());
+				resp.setAUTH_TOKEN(AUTH_TOKEN);
+			}
+		} else {
+			resp.setStatus(ResponseCode.FAILURE_CODE);
+			resp.setMessage(ResponseCode.FAILURE_MESSAGE);
+		}
+		return new ResponseEntity<ItemResponse>(resp, HttpStatus.ACCEPTED);
+	}
+
 }
