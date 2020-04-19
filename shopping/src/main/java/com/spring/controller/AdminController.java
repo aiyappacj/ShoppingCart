@@ -286,8 +286,6 @@ public class AdminController {
 	public ResponseEntity<ItemResponse> addItem(@RequestHeader(name = WebConstants.USER_AUTH_TOKEN) String AUTH_TOKEN,
 			@RequestParam(name = "description") String description,
 			@RequestParam(name = "itemname") String itemname,
-			@RequestParam(name = "price") String price,
-			@RequestParam(name = "quantity") String quantity,
 			@RequestParam(name = "address") String address,
 			@RequestParam(name = "emailaddress") String emailaddress,
 			@RequestParam(name = "phonenumber") String phonenumber,
@@ -303,9 +301,9 @@ public class AdminController {
 			try {
 				Item item = new Item();
 				item.setDescription(description);
-				item.setPrice(Double.parseDouble(price));
+				item.setPrice(Double.parseDouble("1"));
 				item.setItemname(itemname);
-				item.setQuantity(Integer.parseInt(quantity));
+				item.setQuantity(Integer.parseInt("1"));
 				item.setItemimage(file.getBytes());
 				item.setEmailaddress(emailaddress);
 				item.setPhonenumber(phonenumber);
