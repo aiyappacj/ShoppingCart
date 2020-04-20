@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.spring.model.Item;
+import com.spring.model.Product;
 
 @Repository
 @Transactional

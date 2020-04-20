@@ -42,6 +42,11 @@ import com.spring.response.serverResp;
 import com.spring.response.viewOrdResp;
 import com.spring.util.Validator;
 import com.spring.util.jwtUtil;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -349,6 +354,7 @@ public class AdminController {
 		}
 		return new ResponseEntity<ItemResponse>(resp, HttpStatus.ACCEPTED);
 	}
+	
 	@GetMapping("/item/description/{description}")
 	public ResponseEntity<ItemResponse> searchItemByDesc(
 			@RequestHeader(name = WebConstants.USER_AUTH_TOKEN) String AUTH_TOKEN,
@@ -371,6 +377,13 @@ public class AdminController {
 			resp.setMessage(ResponseCode.FAILURE_MESSAGE);
 		}
 		return new ResponseEntity<ItemResponse>(resp, HttpStatus.ACCEPTED);
+	}
+	
+	@GetMapping("/clients/get")
+	public Page<Item> getClientPage(@RequestHeader(name = WebConstants.USER_AUTH_TOKEN) String AUTH_TOKEN,@RequestParam("page") int page,@RequestParam("size")int size){
+		Sort sort = new Sort(new Sort.Order(Direction.ASC, "description"));
+		Pageable pageable = new PageRequest(page, size, sort);
+		return itemRepo.findAll(pageable);
 	}
 
 }
