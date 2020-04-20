@@ -9,9 +9,11 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -33,6 +35,7 @@ import com.spring.repository.OrderRepository;
 import com.spring.repository.ProductRepository;
 import com.spring.repository.UserRepository;
 import com.spring.response.ItemResponse;
+import com.spring.response.ItemVO;
 import com.spring.response.order;
 import com.spring.response.prodResp;
 import com.spring.response.serverResp;
@@ -56,7 +59,7 @@ public class AdminController {
 
 	@Autowired
 	private CartRepository cartRepo;
-
+	
 	@Autowired
 	private ItemRepository itemRepo;
 
@@ -277,28 +280,31 @@ public class AdminController {
 		}
 		return new ResponseEntity<serverResp>(resp, HttpStatus.ACCEPTED);
 	}
-
-	// @PostMapping("/addProduct", consumes = { "multipart/form-data" })
-	@PostMapping(value = "/addProduct")
+	
+	
+	//@PostMapping("/addProduct", consumes = { "multipart/form-data" })
+	 @PostMapping(value = "/addProduct")
 	public ResponseEntity<ItemResponse> addItem(@RequestHeader(name = WebConstants.USER_AUTH_TOKEN) String AUTH_TOKEN,
-			@RequestParam(name = "description") String description, @RequestParam(name = "itemname") String itemname,
-			@RequestParam(name = "price") String price, @RequestParam(name = "quantity") String quantity,
-			@RequestParam(name = "address") String address, @RequestParam(name = "emailaddress") String emailaddress,
-			@RequestParam(name = "phonenumber") String phonenumber, @RequestParam(name = "freebie") String freebie,
+			@RequestParam(name = "description") String description,
+			@RequestParam(name = "itemname") String itemname,
+			@RequestParam(name = "address") String address,
+			@RequestParam(name = "emailaddress") String emailaddress,
+			@RequestParam(name = "phonenumber") String phonenumber,
+			@RequestParam(name = "freebie") String freebie,
 			@RequestParam(name = "file") MultipartFile file
-
-	) throws IOException {
+			
+			) throws IOException {
 		ItemResponse resp = new ItemResponse();
-		if (Validator.isStringEmpty(itemname)) {
+		if (Validator.isStringEmpty(itemname) ) {
 			resp.setStatus(ResponseCode.BAD_REQUEST_CODE);
 			resp.setMessage(ResponseCode.BAD_REQUEST_MESSAGE);
 		} else if (!Validator.isStringEmpty(AUTH_TOKEN) && jwtutil.checkToken(AUTH_TOKEN) != null) {
 			try {
 				Item item = new Item();
 				item.setDescription(description);
-				item.setPrice(Double.parseDouble(price));
+				item.setPrice(Double.parseDouble("1"));
 				item.setItemname(itemname);
-				item.setQuantity(Integer.parseInt(quantity));
+				item.setQuantity(Integer.parseInt("1"));
 				item.setItemimage(file.getBytes());
 				item.setEmailaddress(emailaddress);
 				item.setPhonenumber(phonenumber);
@@ -343,7 +349,6 @@ public class AdminController {
 		}
 		return new ResponseEntity<ItemResponse>(resp, HttpStatus.ACCEPTED);
 	}
-
 	@GetMapping("/item/description/{description}")
 	public ResponseEntity<ItemResponse> searchItemByDesc(
 			@RequestHeader(name = WebConstants.USER_AUTH_TOKEN) String AUTH_TOKEN,
