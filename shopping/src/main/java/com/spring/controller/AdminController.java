@@ -19,10 +19,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.spring.constants.ResponseCode;
 import com.spring.constants.WebConstants;
 import com.spring.model.Item;
@@ -40,7 +43,9 @@ import com.spring.response.order;
 import com.spring.response.prodResp;
 import com.spring.response.serverResp;
 import com.spring.response.viewOrdResp;
+import com.spring.service.WatsonAssistantService;
 import com.spring.util.Validator;
+import com.spring.util.WatsonAssistantMessage;
 import com.spring.util.jwtUtil;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -70,6 +75,14 @@ public class AdminController {
 
 	@Autowired
 	private jwtUtil jwtutil;
+	
+	private WatsonAssistantService watsonAssistantService;
+	
+	
+	@Autowired
+    public AdminController(WatsonAssistantService watsonAssistantService) {
+        this.watsonAssistantService = watsonAssistantService;
+    }
 
 	@PostMapping("/verify")
 	public ResponseEntity<serverResp> verifyUser(@Valid @RequestBody HashMap<String, String> credential) {
@@ -385,5 +398,18 @@ public class AdminController {
 		Pageable pageable = new PageRequest(page, size, sort);
 		return itemRepo.findAll(pageable);
 	}
+
+    
+
+    @RequestMapping(value="/send", method = RequestMethod.GET)
+    public JsonNode send(@RequestParam("message") String message) throws IOException {
+
+        //String response1 = watsonAssistantService.sendMessage("Hola");
+        WatsonAssistantMessage response;
+        response = watsonAssistantService.sendMessage(message);
+
+        return response.getGeneric();
+
+    }
 
 }
