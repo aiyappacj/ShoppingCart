@@ -1,0 +1,14 @@
+applications:
+- path: target/shopping-0.0.1-SNAPSHOT.war
+  memory: 256M
+  instances: 1
+  name: shopping
+  host: null
+  disk_quota: 1G
+  buildpacks:
+  - java_buildpack
+  health-check-type: none
+  env:    
+        IBM_LIBERTY_LICENSE: L-MCAO-9SYMVC    
+        JAVA_HOME: .java-buildpack/open_jdk_jre/bin/
+        JVM: openjdk 
